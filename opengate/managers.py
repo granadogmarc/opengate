@@ -373,6 +373,11 @@ class PhysicsListManager(GateObject):
     special_chemistry_constructor_classes = {}
     #  special_chemistry_constructor_classes["G4EmDNAChemistry_option3"] = g4.G4EmDNAChemistry_option3
 
+    special_physics_constructor_classes["G4EmDNAChemistry"] = g4.G4EmDNAChemistry
+    special_physics_constructor_classes["G4EmDNAChemistry_option1"] = g4.G4EmDNAChemistry_option1
+    special_physics_constructor_classes["G4EmDNAChemistry_option2"] = g4.G4EmDNAChemistry_option2
+    special_physics_constructor_classes["G4EmDNAChemistry_option3"] = g4.G4EmDNAChemistry_option3
+
     def __init__(self, physics_manager, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.physics_manager = physics_manager
@@ -437,20 +442,6 @@ class PhysicsListManager(GateObject):
                 except KeyError:
                     fatal(
                         f"Special physics constructor named '{spc}' not found. Available constructors are: {self.special_physics_constructor_classes.keys()}."
-                    )
-        # add special chemistry constructors
-        for (
-            spc,
-            switch,
-        ) in self.physics_manager.special_chemistry_constructors.items():
-            if switch is True:
-                try:
-                    physics_list.RegisterPhysics(
-                        self.special_chemistry_constructor_classes[spc]()
-                    )
-                except KeyError:
-                    fatal(
-                        f"Special chemistry constructor named '{spc}' not found. Available constructors are: {self.special_chemistry_constructor_classes.keys()}."
                     )
         return physics_list
 
