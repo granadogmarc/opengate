@@ -40,6 +40,7 @@ GateChemistryActor::GateChemistryActor(pybind11::dict &user_info)
   _timeStepModelStr = DictGetStr(user_info, "timestep_model");
   _endTime = DictGetDouble(user_info, "end_time");
   _reactions = getReactionInputs(user_info, "reactions");
+	_moleculeCounterVerbose = DictGetInt(user_info, "molecule_counter_verbose");
 
   setTimeBinsCount(DictGetInt(user_info, "time_bins_count"));
 }
