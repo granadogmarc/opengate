@@ -1,6 +1,6 @@
 from .arfactors import ARFActor, ARFTrainingDatasetActor
 from .doseactors import DoseActor, LETActor, FluenceActor
-from .chemistryactors import ChemistryActor
+from .chemistryactors import ChemistryActor, ChemistryLongTimeActor
 from .digitizers import (
     DigitizerAdderActor,
     DigitizerReadoutActor,
@@ -31,6 +31,7 @@ actor_type_names = {
     FluenceActor,
     LETActor,
     ChemistryActor,
+    ChemistryLongTimeActor,
     SourceInfoActor,
     PhaseSpaceActor,
     DigitizerHitsCollectionActor,
