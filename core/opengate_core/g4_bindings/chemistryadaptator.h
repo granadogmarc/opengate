@@ -11,6 +11,7 @@
 #include <functional>
 
 class G4DNAMolecularReactionTable;
+#include <G4DNAMolecularReactionTable.hh>
 
 template <typename C> class ChemistryAdaptator : public C {
 public:
@@ -26,6 +27,7 @@ public:
   void
   ConstructTimeStepModel(G4DNAMolecularReactionTable *reactionTable) override {
     C::ConstructTimeStepModel(reactionTable);
+		reactionTable->PrintTable();
   }
 
   void

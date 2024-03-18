@@ -62,6 +62,8 @@ class ChemistryLongTimeActor(g4.GateChemistryLongTimeActor, ActorBase):
 
         user_info.dose_cutoff = 0
 
+        user_info.reset_scavenger_for_each_beam = False
+
         # TODO remove
         user_info.boundary_size = [0.8 * g4_units.um, 0.8 * g4_units.um, 0.8 * g4_units.um]
 

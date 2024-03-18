@@ -124,6 +124,8 @@ GateChemistryLongTimeActor::GateChemistryLongTimeActor(pybind11::dict &user_info
 
 	_doseCutOff = DictGetDouble(user_info, "dose_cutoff");
 
+	_resetScavengerForEachBeam = DictGetBool(user_info, "reset_scavenger_for_each_beam");
+
 	// TODO remove
 	_boundarySize = DictGetVecDouble(user_info, "boundary_size");
 }
@@ -133,6 +135,8 @@ void GateChemistryLongTimeActor::Initialize(G4HCofThisEvent *hce) {
 
 	_chemistryWorld = std::make_unique<ChemistryWorld>(this);
 	_chemistryWorld->ConstructChemistryComponents();
+
+	G4Scheduler::Instance()->ResetScavenger(_resetScavengerForEachBeam);
 
   G4MoleculeCounter::Instance()->SetVerbose(_moleculeCounterVerbose);
   G4MoleculeCounter::Instance()->Use();

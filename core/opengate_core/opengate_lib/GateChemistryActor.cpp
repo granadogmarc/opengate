@@ -43,10 +43,6 @@ GateChemistryActor::GateChemistryActor(pybind11::dict &user_info)
 	_moleculeCounterVerbose = DictGetInt(user_info, "molecule_counter_verbose");
 
   setTimeBinsCount(DictGetInt(user_info, "time_bins_count"));
-}
-
-void GateChemistryActor::Initialize(G4HCofThisEvent *hce) {
-  GateVActor::Initialize(hce);
 
   G4MoleculeCounter::Instance()->SetVerbose(_moleculeCounterVerbose);
   G4MoleculeCounter::Instance()->Use();
@@ -95,16 +91,19 @@ void GateChemistryActor::Initialize(G4HCofThisEvent *hce) {
       ChemistryAdaptator<G4EmDNAChemistry_option3>::getChemistryList();
   if (chemistryList != nullptr)
     chemistryList->SetTimeStepModel(timeStepModel);
+}
+
+void GateChemistryActor::Initialize(G4HCofThisEvent *hce) {
+  GateVActor::Initialize(hce);
 
   G4MoleculeCounter::Instance()->ResetCounter();
   G4DNAChemistryManager::Instance()->ResetCounterWhenRunEnds(false);
-
-  G4MoleculeCounter::Instance()->ResetCounter();
 }
 
 void GateChemistryActor::EndSimulationAction() {}
 
 void GateChemistryActor::EndOfRunAction(G4Run const *) {
+	G4cerr << "~~ DEBUG EndOfRunAction" << G4endl;
   for (auto &[molecule, map] : _speciesInfoPerTime) {
     for (auto &[time, data] : map) {
       data.g /= _nbEvents;   // mean value of g
@@ -114,6 +113,7 @@ void GateChemistryActor::EndOfRunAction(G4Run const *) {
 }
 
 void GateChemistryActor::EndOfEventAction(G4Event const *) {
+	G4cerr << "~~ DEBUG EndOfEventAction" << G4endl;
   auto *moleculeCounter = G4MoleculeCounter::Instance();
 
   if (not G4EventManager::GetEventManager()

@@ -106,6 +106,8 @@ private:
 
 	double _doseCutOff = 0;
 
+	bool _resetScavengerForEachBeam = false;
+
 	// TODO remove
 	std::vector<double> _boundarySize;
 };

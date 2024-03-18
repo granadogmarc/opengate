@@ -371,7 +371,7 @@ class PhysicsListManager(GateObject):
     )
 
     special_chemistry_constructor_classes = {}
-    #  special_chemistry_constructor_classes["G4EmDNAChemistry_option3"] = g4.G4EmDNAChemistry_option3
+    special_chemistry_constructor_classes["G4EmDNAChemistry_option3"] = g4.G4EmDNAChemistry_option3
 
     special_physics_constructor_classes["G4EmDNAChemistry"] = g4.G4EmDNAChemistry
     special_physics_constructor_classes["G4EmDNAChemistry_option1"] = (
