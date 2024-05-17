@@ -24,6 +24,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
+#include "GateHelpers.h"
 #include "GateHelpersDict.h"
 
 #include "../g4_bindings/chemistryadaptator.h"
@@ -40,6 +41,7 @@ GateChemistryActor::GateChemistryActor(pybind11::dict &user_info)
   _timeStepModelStr = DictGetStr(user_info, "timestep_model");
   _endTime = DictGetDouble(user_info, "end_time");
   _reactions = getReactionInputs(user_info, "reactions");
+	_keepDefaultReactions = DictGetBool(user_info, "default_reactions");
 	_moleculeCounterVerbose = DictGetInt(user_info, "molecule_counter_verbose");
 
   setTimeBinsCount(DictGetInt(user_info, "time_bins_count"));
@@ -61,31 +63,10 @@ GateChemistryActor::GateChemistryActor(pybind11::dict &user_info)
 
   G4Scheduler::Instance()->SetEndTime(_endTime);
 
-  {
-    auto constructReactionTable =
-        [&reactions = _reactions](G4DNAMolecularReactionTable *reactionTable) {
-          reactionTable->Reset();
-
-          for (auto const &reaction : reactions) {
-            double rate =
-                reaction.rate * (1e-3 * CLHEP::m3 / (CLHEP::mole * CLHEP::s));
-            auto *reactionData = new G4DNAMolecularReactionData(
-                rate, reaction.reactants[0], reaction.reactants[1]);
-            for (auto const &product : reaction.products)
-              if (product != "H2O")
-                reactionData->AddProduct(product);
-            reactionData->ComputeEffectiveRadius();
-            reactionData->SetReactionType(reaction.type);
-
-            reactionTable->SetReaction(reactionData);
-          }
-
-          reactionTable->PrintTable();
-        };
-
-    ChemistryAdaptator<G4EmDNAChemistry_option3>::setConstructReactionTableHook(
-        constructReactionTable);
-  }
+  if (!_reactions.empty())
+    setupConstructReactionTableHook();
+  else if (!_keepDefaultReactions)
+    Fatal("Disabling default reactions requires to provide reactions");
 
   auto *chemistryList =
       ChemistryAdaptator<G4EmDNAChemistry_option3>::getChemistryList();
@@ -103,7 +84,6 @@ void GateChemistryActor::Initialize(G4HCofThisEvent *hce) {
 void GateChemistryActor::EndSimulationAction() {}
 
 void GateChemistryActor::EndOfRunAction(G4Run const *) {
-	G4cerr << "~~ DEBUG EndOfRunAction" << G4endl;
   for (auto &[molecule, map] : _speciesInfoPerTime) {
     for (auto &[time, data] : map) {
       data.g /= _nbEvents;   // mean value of g
@@ -113,7 +93,6 @@ void GateChemistryActor::EndOfRunAction(G4Run const *) {
 }
 
 void GateChemistryActor::EndOfEventAction(G4Event const *) {
-	G4cerr << "~~ DEBUG EndOfEventAction" << G4endl;
   auto *moleculeCounter = G4MoleculeCounter::Instance();
 
   if (not G4EventManager::GetEventManager()
@@ -234,4 +213,31 @@ GateChemistryActor::getReactionInputs(pybind11::dict &user_info,
   }
 
   return reactionInputs;
+}
+
+void GateChemistryActor::setupConstructReactionTableHook() {
+  auto constructReactionTable =
+    [&reactions = _reactions, &keepDefaultReactions = _keepDefaultReactions]
+    (G4DNAMolecularReactionTable *reactionTable) {
+      if (!keepDefaultReactions) reactionTable->Reset();
+
+      for (auto const &reaction : reactions) {
+        double rate =
+          reaction.rate * (1e-3 * CLHEP::m3 / (CLHEP::mole * CLHEP::s));
+        auto *reactionData = new G4DNAMolecularReactionData(
+          rate, reaction.reactants[0], reaction.reactants[1]);
+        for (auto const &product : reaction.products)
+          if (product != "H2O")
+            reactionData->AddProduct(product);
+        reactionData->ComputeEffectiveRadius();
+        reactionData->SetReactionType(reaction.type);
+
+        reactionTable->SetReaction(reactionData);
+      }
+
+      reactionTable->PrintTable();
+    };
+
+  ChemistryAdaptator<G4EmDNAChemistry_option3>::setConstructReactionTableHook(
+    constructReactionTable);
 }

@@ -60,6 +60,7 @@ public:
 protected:
   static ReactionInputs getReactionInputs(pybind11::dict &user_info,
                                           std::string const &key);
+	void setupConstructReactionTableHook();
 
 private:
   SpeciesMap _speciesInfoPerTime;
@@ -72,6 +73,7 @@ private:
   int _moleculeCounterVerbose = 0;
   std::string _timeStepModelStr = "IRT";
   double _endTime;
+	bool _keepDefaultReactions = true;
   std::vector<ReactionInput> _reactions;
 };
 

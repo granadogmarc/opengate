@@ -14,6 +14,7 @@ class ChemistryActor(g4.GateChemistryActor, ActorBase):
         user_info.output = "output.root"
         user_info.timestep_model = "IRT"
         user_info.reactions = []
+        user_info.default_reactions = True
         user_info.end_time = 1 * g4_units.s
         user_info.time_bins_count = 10
         user_info.molecule_counter_verbose = 0
