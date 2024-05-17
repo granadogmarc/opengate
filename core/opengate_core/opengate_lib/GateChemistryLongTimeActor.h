@@ -38,11 +38,11 @@ public:
   [[nodiscard]] pybind11::dict getData() const;
 
 public:
-	struct ScavengerConfig {
-		std::string species;
-		double concentration;
-		std::string unit;
-	};
+  struct ScavengerConfig {
+    std::string species;
+    double concentration;
+    std::string unit;
+  };
 
   using ScavengerConfigs = std::vector<ScavengerConfig>;
 
@@ -67,21 +67,20 @@ public:
   using SpeciesMap = std::map<SpeciesPtr, InnerSpeciesMap>;
 
 private:
-	class ChemistryWorld: public G4VChemistryWorld {
-	public:
-		ChemistryWorld(GateChemistryLongTimeActor *actor);
+  class ChemistryWorld : public G4VChemistryWorld {
+  public:
+    ChemistryWorld(GateChemistryLongTimeActor *actor);
 
-		void ConstructChemistryBoundary() override;
-		void ConstructChemistryComponents() override;
+    void ConstructChemistryBoundary() override;
+    void ConstructChemistryComponents() override;
 
-	private:
-		GateChemistryLongTimeActor *_actor;
-	};
-
+  private:
+    GateChemistryLongTimeActor *_actor;
+  };
 
 protected:
-	static ScavengerConfigs getScavengerConfigs(pybind11::dict &user_info,
-																							std::string const &key);
+  static ScavengerConfigs getScavengerConfigs(pybind11::dict &user_info,
+                                              std::string const &key);
 
   static ReactionInputs getReactionInputs(pybind11::dict &user_info,
                                           std::string const &key);
@@ -99,17 +98,17 @@ private:
   double _endTime;
   std::vector<ReactionInput> _reactions;
 
-	std::unique_ptr<G4VChemistryWorld> _chemistryWorld;
+  std::unique_ptr<G4VChemistryWorld> _chemistryWorld;
 
-	double _pH = 7;
-	ScavengerConfigs _scavengerConfigs;
+  double _pH = 7;
+  ScavengerConfigs _scavengerConfigs;
 
-	double _doseCutOff = 0;
+  double _doseCutOff = 0;
 
-	bool _resetScavengerForEachBeam = false;
+  bool _resetScavengerForEachBeam = false;
 
-	// TODO remove
-	std::vector<double> _boundarySize;
+  // TODO remove
+  std::vector<double> _boundarySize;
 };
 
 #endif

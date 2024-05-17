@@ -14,8 +14,8 @@ namespace py = pybind11;
 
 void init_GateChemistryLongTimeActor(py::module &m) {
   py::class_<GateChemistryLongTimeActor,
-             std::unique_ptr<GateChemistryLongTimeActor, py::nodelete>, GateVActor>(
-      m, "GateChemistryLongTimeActor")
+             std::unique_ptr<GateChemistryLongTimeActor, py::nodelete>,
+             GateVActor>(m, "GateChemistryLongTimeActor")
       .def(py::init<py::dict &>())
       .def("get_times", &GateChemistryLongTimeActor::getTimes)
       .def("get_data", &GateChemistryLongTimeActor::getData);

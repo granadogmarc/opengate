@@ -8,16 +8,16 @@
 #include "GateChemistryLongTimeActor.h"
 
 #include <CLHEP/Units/SystemOfUnits.h>
+#include <G4DNABoundingBox.hh>
 #include <G4DNAChemistryManager.hh>
 #include <G4DNAMolecularReactionTable.hh>
-#include <G4DNABoundingBox.hh>
-#include <G4MoleculeTable.hh>
 #include <G4EmDNAChemistry_option3.hh>
 #include <G4EmDNAPhysics_option3.hh>
 #include <G4EmParameters.hh>
 #include <G4EventManager.hh>
 #include <G4H2O.hh>
 #include <G4MoleculeCounter.hh>
+#include <G4MoleculeTable.hh>
 #include <G4RunManager.hh>
 #include <G4Scheduler.hh>
 #include <G4THitsMap.hh>
@@ -26,85 +26,88 @@
 #include <G4UnitsTable.hh>
 #include <G4VChemistryWorld.hh>
 #include <G4ios.hh>
-#include <memory>
 #include <initializer_list>
+#include <memory>
 #include <pybind11/pybind11.h>
 #include <pybind11/pytypes.h>
 
+#include "GateHelpersDict.h"
 #include <string>
 #include <vector>
-#include "GateHelpersDict.h"
 
 #include "../g4_bindings/chemistryadaptator.h"
 #include "GateVActor.h"
 
-GateChemistryLongTimeActor::ChemistryWorld::ChemistryWorld(GateChemistryLongTimeActor *actor):
-	_actor(actor)
-{
-}
+GateChemistryLongTimeActor::ChemistryWorld::ChemistryWorld(
+    GateChemistryLongTimeActor *actor)
+    : _actor(actor) {}
 
 void GateChemistryLongTimeActor::ChemistryWorld::ConstructChemistryBoundary() {
-	auto const &size = _actor->_boundarySize;
-	std::initializer_list<double> boundingBox{
-		// high, low
-		size[0], -size[0], // x
-		size[1], -size[1], // y
-		size[2], -size[2]  // z
-	};
-	fpChemistryBoundary = std::make_unique<G4DNABoundingBox>(boundingBox);
+  auto const &size = _actor->_boundarySize;
+  std::initializer_list<double> boundingBox{
+      // high, low
+      size[0], -size[0], // x
+      size[1], -size[1], // y
+      size[2], -size[2]  // z
+  };
+  fpChemistryBoundary = std::make_unique<G4DNABoundingBox>(boundingBox);
 }
 
-void GateChemistryLongTimeActor::ChemistryWorld::ConstructChemistryComponents() {
-	constexpr auto water = 55.3; // from NIST material database
-	constexpr auto moleLiter = CLHEP::mole * CLHEP::liter;
+void GateChemistryLongTimeActor::ChemistryWorld::
+    ConstructChemistryComponents() {
+  constexpr auto water = 55.3; // from NIST material database
+  constexpr auto moleLiter = CLHEP::mole * CLHEP::liter;
 
   constexpr double pKw = 14; // at 25°C pK of water is 14
-	auto const & pH = _actor->_pH;
+  auto const &pH = _actor->_pH;
 
-	auto* moleculeTable = G4MoleculeTable::Instance();
+  auto *moleculeTable = G4MoleculeTable::Instance();
 
-  auto* mH2O = moleculeTable->GetConfiguration("H2O");
+  auto *mH2O = moleculeTable->GetConfiguration("H2O");
   fpChemicalComponent[mH2O] = water / moleLiter;
 
-  auto* mH3Op = moleculeTable->GetConfiguration("H3Op(B)");
-  fpChemicalComponent[mH3Op] = std::pow(10, - pH) / moleLiter; // pH = 7
+  auto *mH3Op = moleculeTable->GetConfiguration("H3Op(B)");
+  fpChemicalComponent[mH3Op] = std::pow(10, -pH) / moleLiter; // pH = 7
 
-  auto* mOHm = moleculeTable->GetConfiguration("OHm(B)");
+  auto *mOHm = moleculeTable->GetConfiguration("OHm(B)");
   fpChemicalComponent[mOHm] = std::pow(10, -(pKw - pH)) / moleLiter; // pH = 7
 
-  auto* mO2 = moleculeTable->GetConfiguration("O2");
+  auto *mO2 = moleculeTable->GetConfiguration("O2");
   fpChemicalComponent[mO2] = (0. / 100) * 0.0013 / moleLiter;
 
-	// apply scavanger configurations
-	for(auto const &scavengerConfig : _actor->_scavengerConfigs) {
-		auto* m = moleculeTable->GetConfiguration(scavengerConfig.species);
-		auto const &concentration = scavengerConfig.concentration;
-		auto const &unitWithPrefix = scavengerConfig.unit;
-		if(not unitWithPrefix.empty()) {
-			char unit = *unitWithPrefix.rbegin();
-			if(unit == 'M') {
-				double factor = 1;
-				if(unitWithPrefix.size() > 1) {
-					auto prefix = unitWithPrefix.substr(0, unitWithPrefix.size()-1);
-					if(prefix == "u")       factor = 1e-6;
-					else if(prefix == "m")  factor = 1e-3;
-					else // TODO error
-						;
-				}
+  // apply scavanger configurations
+  for (auto const &scavengerConfig : _actor->_scavengerConfigs) {
+    auto *m = moleculeTable->GetConfiguration(scavengerConfig.species);
+    auto const &concentration = scavengerConfig.concentration;
+    auto const &unitWithPrefix = scavengerConfig.unit;
+    if (not unitWithPrefix.empty()) {
+      char unit = *unitWithPrefix.rbegin();
+      if (unit == 'M') {
+        double factor = 1;
+        if (unitWithPrefix.size() > 1) {
+          auto prefix = unitWithPrefix.substr(0, unitWithPrefix.size() - 1);
+          if (prefix == "u")
+            factor = 1e-6;
+          else if (prefix == "m")
+            factor = 1e-3;
+          else // TODO error
+            ;
+        }
 
-				fpChemicalComponent[m] = factor * concentration / moleLiter;
-			} else if(unit == '%') {
-				constexpr auto o2 = 0.0013;
-				double concentrationInM =
-				fpChemicalComponent[m] = (concentration / 100) * o2 / moleLiter;
-			}
-		}
-	}
+        fpChemicalComponent[m] = factor * concentration / moleLiter;
+      } else if (unit == '%') {
+        constexpr auto o2 = 0.0013;
+        double concentrationInM = fpChemicalComponent[m] =
+            (concentration / 100) * o2 / moleLiter;
+      }
+    }
+  }
 }
 
 /* *** */
 
-GateChemistryLongTimeActor::GateChemistryLongTimeActor(pybind11::dict &user_info)
+GateChemistryLongTimeActor::GateChemistryLongTimeActor(
+    pybind11::dict &user_info)
     : GateVActor(user_info, true) {
   fActions.insert("NewStage");
   fActions.insert("EndOfRunAction");
@@ -115,28 +118,29 @@ GateChemistryLongTimeActor::GateChemistryLongTimeActor(pybind11::dict &user_info
   _timeStepModelStr = DictGetStr(user_info, "timestep_model");
   _endTime = DictGetDouble(user_info, "end_time");
   _reactions = getReactionInputs(user_info, "reactions");
-	_moleculeCounterVerbose = DictGetInt(user_info, "molecule_counter_verbose");
+  _moleculeCounterVerbose = DictGetInt(user_info, "molecule_counter_verbose");
 
   setTimeBinsCount(DictGetInt(user_info, "time_bins_count"));
 
-	_pH = DictGetDouble(user_info, "pH");
-	_scavengerConfigs = getScavengerConfigs(user_info, "scavengers");
+  _pH = DictGetDouble(user_info, "pH");
+  _scavengerConfigs = getScavengerConfigs(user_info, "scavengers");
 
-	_doseCutOff = DictGetDouble(user_info, "dose_cutoff");
+  _doseCutOff = DictGetDouble(user_info, "dose_cutoff");
 
-	_resetScavengerForEachBeam = DictGetBool(user_info, "reset_scavenger_for_each_beam");
+  _resetScavengerForEachBeam =
+      DictGetBool(user_info, "reset_scavenger_for_each_beam");
 
-	// TODO remove
-	_boundarySize = DictGetVecDouble(user_info, "boundary_size");
+  // TODO remove
+  _boundarySize = DictGetVecDouble(user_info, "boundary_size");
 }
 
 void GateChemistryLongTimeActor::Initialize(G4HCofThisEvent *hce) {
   GateVActor::Initialize(hce);
 
-	_chemistryWorld = std::make_unique<ChemistryWorld>(this);
-	_chemistryWorld->ConstructChemistryComponents();
+  _chemistryWorld = std::make_unique<ChemistryWorld>(this);
+  _chemistryWorld->ConstructChemistryComponents();
 
-	G4Scheduler::Instance()->ResetScavenger(_resetScavengerForEachBeam);
+  G4Scheduler::Instance()->ResetScavenger(_resetScavengerForEachBeam);
 
   G4MoleculeCounter::Instance()->SetVerbose(_moleculeCounterVerbose);
   G4MoleculeCounter::Instance()->Use();
@@ -249,33 +253,36 @@ void GateChemistryLongTimeActor::SteppingAction(G4Step *step) {
   edep *= step->GetPreStepPoint()->GetWeight();
   _edepSum += edep;
 
-	auto *track = step->GetTrack();
+  auto *track = step->GetTrack();
 
-	if(track->GetParentID() == 0 && track->GetCurrentStepNumber() == 1) {
-		constexpr auto density = .001;
-		auto volume = _chemistryWorld->GetChemistryBoundary()->Volume();
-		double dose = (_edepSum / CLHEP::eV) / (density * volume * 6.242e+18);
-		if(dose > _doseCutOff) {
-			auto *eventManager = G4EventManager::GetEventManager();
-			auto *primary = eventManager->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary();
-			auto const &name = primary->GetParticleDefinition()->GetParticleName();
-			auto energy = primary->GetKineticEnergy();
-			G4cout << "[GateChemistryLongTimeActor] stop beam line '" << name << "' (" << energy << " MeV) at dose: " << dose << " Gy" << G4endl;
+  if (track->GetParentID() == 0 && track->GetCurrentStepNumber() == 1) {
+    constexpr auto density = .001;
+    auto volume = _chemistryWorld->GetChemistryBoundary()->Volume();
+    double dose = (_edepSum / CLHEP::eV) / (density * volume * 6.242e+18);
+    if (dose > _doseCutOff) {
+      auto *eventManager = G4EventManager::GetEventManager();
+      auto *primary = eventManager->GetConstCurrentEvent()
+                          ->GetPrimaryVertex()
+                          ->GetPrimary();
+      auto const &name = primary->GetParticleDefinition()->GetParticleName();
+      auto energy = primary->GetKineticEnergy();
+      G4cout << "[GateChemistryLongTimeActor] stop beam line '" << name << "' ("
+             << energy << " MeV) at dose: " << dose << " Gy" << G4endl;
 
-			track->SetTrackStatus(fStopAndKill);
-			auto const *secondaries = track->GetStep()->GetSecondaryInCurrentStep();
-			for (auto const *secondary : *secondaries) {
-				if (secondary != nullptr) {
-					// FIXME
-					// from UHDR example
-					// must find how to get non-const access to secondaries
-					auto *secondaryMut = const_cast<G4Track*>(secondary);
-					secondaryMut->SetTrackStatus(fStopAndKill);
-				}
-			}
-			eventManager->GetStackManager()->ClearUrgentStack();
-		}
-	}
+      track->SetTrackStatus(fStopAndKill);
+      auto const *secondaries = track->GetStep()->GetSecondaryInCurrentStep();
+      for (auto const *secondary : *secondaries) {
+        if (secondary != nullptr) {
+          // FIXME
+          // from UHDR example
+          // must find how to get non-const access to secondaries
+          auto *secondaryMut = const_cast<G4Track *>(secondary);
+          secondaryMut->SetTrackStatus(fStopAndKill);
+        }
+      }
+      eventManager->GetStackManager()->ClearUrgentStack();
+    }
+  }
 }
 
 void GateChemistryLongTimeActor::NewStage() {
@@ -335,24 +342,24 @@ pybind11::dict GateChemistryLongTimeActor::getData() const {
 
 GateChemistryLongTimeActor::ScavengerConfigs
 GateChemistryLongTimeActor::getScavengerConfigs(pybind11::dict &user_info,
-																								std::string const &key) {
-	ScavengerConfigs scavengerConfigs;
+                                                std::string const &key) {
+  ScavengerConfigs scavengerConfigs;
 
-	auto configs = DictGetVecList(user_info, key);
-	for (auto const &config : configs) {
-		ScavengerConfig scavengerConfig;
+  auto configs = DictGetVecList(user_info, key);
+  for (auto const &config : configs) {
+    ScavengerConfig scavengerConfig;
 
-		scavengerConfig.species = config[0].cast<std::string>();
-		scavengerConfig.concentration = config[1].cast<double>();
-		scavengerConfig.unit = config[2].cast<std::string>();
-	}
+    scavengerConfig.species = config[0].cast<std::string>();
+    scavengerConfig.concentration = config[1].cast<double>();
+    scavengerConfig.unit = config[2].cast<std::string>();
+  }
 
-	return scavengerConfigs;
+  return scavengerConfigs;
 }
 
 GateChemistryLongTimeActor::ReactionInputs
 GateChemistryLongTimeActor::getReactionInputs(pybind11::dict &user_info,
-																							std::string const &key) {
+                                              std::string const &key) {
   ReactionInputs reactionInputs;
 
   auto reactions = DictGetVecList(user_info, key);

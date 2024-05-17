@@ -27,7 +27,7 @@ public:
   void
   ConstructTimeStepModel(G4DNAMolecularReactionTable *reactionTable) override {
     C::ConstructTimeStepModel(reactionTable);
-		reactionTable->PrintTable();
+    reactionTable->PrintTable();
   }
 
   void

@@ -66,7 +66,11 @@ class ChemistryLongTimeActor(g4.GateChemistryLongTimeActor, ActorBase):
         user_info.reset_scavenger_for_each_beam = False
 
         # TODO remove
-        user_info.boundary_size = [0.8 * g4_units.um, 0.8 * g4_units.um, 0.8 * g4_units.um]
+        user_info.boundary_size = [
+            0.8 * g4_units.um,
+            0.8 * g4_units.um,
+            0.8 * g4_units.um,
+        ]
 
     def __init__(self, user_info):
         ActorBase.__init__(self, user_info)
