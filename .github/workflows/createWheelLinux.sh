@@ -14,9 +14,9 @@ ls /opt/Qt/6.7.2/gcc_64/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/iconengines/ opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/imageformats opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/networkinformation/ opengate_core/plugins/
-#cp -r /opt/Qt/6.7.2/gcc_64/plugins/platforminputcontexts/ opengate_core/plugins/
+cp -r /opt/Qt/6.7.2/gcc_64/plugins/platforminputcontexts/ opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/platforms opengate_core/plugins/
-#cp -r /opt/Qt/6.7.2/gcc_64/plugins/platformthemes opengate_core/plugins/
+cp -r /opt/Qt/6.7.2/gcc_64/plugins/platformthemes opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmllint opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmltooling opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/sqldrivers opengate_core/plugins/
