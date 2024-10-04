@@ -8,8 +8,8 @@ source /software/geant4/bin/geant4make.sh
 export CMAKE_PREFIX_PATH=/software/geant4/bin:/software/itk/bin/:${CMAKE_PREFIX_PATH}
 mkdir opengate_core/plugins
 ls /opt/Qt/6.7.2/gcc_64/plugins/
-cp -r /opt/Qt/6.7.2/gcc_64/plugins/designer/ opengate_core/plugins/
-#cp -r /opt/Qt/6.7.2/gcc_64/plugins/egldeviceintegrations/ opengate_core/plugins/
+cp -r /opt/Qt/6.7.2/gcc_64/plugins/designer/ opengate_core/plugins/ #pareil
+cp -r /opt/Qt/6.7.2/gcc_64/plugins/egldeviceintegrations/ opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/generic/ opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/iconengines/ opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/imageformats opengate_core/plugins/
