@@ -1085,6 +1085,15 @@ class BioDoseActor(VoxelDepositActor, g4.GateBioDoseActor):
             "edep",
             item=0,
         )
+        self.user_output.biodose.set_item_suffix("edep", item=0)
+
+        self._add_interface_to_user_output(
+            UserInterfaceToActorOutputImage,
+            "biodose",
+            "dose",
+            item=1,
+        )
+        self.user_output.biodose.set_item_suffix("dose", item=1)
 
         self.__initcpp__()
         self.__finalize_init__()
@@ -1125,6 +1134,7 @@ class BioDoseActor(VoxelDepositActor, g4.GateBioDoseActor):
             "biodose",
             run_index,
             self.cpp_edep_image,
+            self.cpp_dose_image,
         )
 
         g4.GateBioDoseActor.BeginOfRunActionMasterThread(self, run_index)
@@ -1134,6 +1144,7 @@ class BioDoseActor(VoxelDepositActor, g4.GateBioDoseActor):
             "biodose",
             run_index,
             self.cpp_edep_image,
+            self.cpp_dose_image,
         )
         self._update_output_coordinate_system("biodose", run_index)
 
