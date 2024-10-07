@@ -19,7 +19,7 @@ cp -r /opt/Qt/6.7.2/gcc_64/plugins/platforms opengate_core/plugins/ #initial
 ##cp -r /opt/Qt/6.7.2/gcc_64/plugins/platformthemes opengate_core/plugins/ #libgtk-3.so.0
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmllint opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmltooling opengate_core/plugins/
-cp -r /opt/Qt/6.7.2/gcc_64/plugins/sqldrivers opengate_core/plugins/
+#cp -r /opt/Qt/6.7.2/gcc_64/plugins/sqldrivers opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/tls opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/xcbglintegrations opengate_core/plugins/ #initial
 /opt/python/${PYTHONFOLDER}/bin/pip install wget colored
