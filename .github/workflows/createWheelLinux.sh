@@ -20,7 +20,7 @@ cp -r /opt/Qt/6.7.2/gcc_64/plugins/platforms opengate_core/plugins/ #initial
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmllint opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/qmltooling opengate_core/plugins/
 #cp -r /opt/Qt/6.7.2/gcc_64/plugins/sqldrivers opengate_core/plugins/ #Cannot repair wheel, because required library "libmimerapi.so" could not be located
-#cp -r /opt/Qt/6.7.2/gcc_64/plugins/tls opengate_core/plugins/
+cp -r /opt/Qt/6.7.2/gcc_64/plugins/tls opengate_core/plugins/
 cp -r /opt/Qt/6.7.2/gcc_64/plugins/xcbglintegrations opengate_core/plugins/ #initial
 /opt/python/${PYTHONFOLDER}/bin/pip install wget colored
 /opt/python/${PYTHONFOLDER}/bin/python setup.py sdist bdist_wheel
