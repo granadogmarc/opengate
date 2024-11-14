@@ -1,3 +1,4 @@
+.. _geometry-and-volumes:
 Geometry and volumes
 ====================
 
